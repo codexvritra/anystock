@@ -4,7 +4,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { createSiweMessage } from "viem/siwe";
 
 const acct = privateKeyToAccount(generatePrivateKey());
-const { nonce, chainId, domain } = await (await fetch("http://localhost:8787/api/v1/auth/nonce")).json();
+const { nonce, chainId, domain } = (await (await fetch("http://localhost:8787/api/v1/auth/nonce")).json()) as { nonce: string; chainId: number; domain: string };
 const message = createSiweMessage({
   address: acct.address,
   chainId,

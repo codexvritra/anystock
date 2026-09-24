@@ -35,8 +35,9 @@ export function usePoll<T>(fn: () => Promise<T>, ms: number, deps: unknown[] = [
 
   useEffect(() => {
     let alive = true;
-    const run = async () => {
-      if (document.hidden) return;
+    const run = async (first = false) => {
+      // background tabs skip the ticks, but the first load always fetches
+      if (document.hidden && !first) return;
       try {
         const d = await fnRef.current();
         if (alive) {
@@ -47,8 +48,8 @@ export function usePoll<T>(fn: () => Promise<T>, ms: number, deps: unknown[] = [
         if (alive) setError((e as Error).message);
       }
     };
-    void run();
-    const t = setInterval(run, ms);
+    void run(true);
+    const t = setInterval(() => void run(), ms);
     const vis = () => !document.hidden && void run();
     document.addEventListener("visibilitychange", vis);
     return () => {

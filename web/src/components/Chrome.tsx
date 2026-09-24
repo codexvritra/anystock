@@ -1,81 +1,68 @@
-import type { ReactNode } from "react";
-import { Chart, Crown, Home, MapIcon, PinMark, Shield } from "./Icons.tsx";
+import { Mark, Word } from "./Brand.tsx";
+import { IcBars, IcBook, IcHome, IcPin, IcShield, IcTrophy } from "./Icons.tsx";
 import { href, type Route } from "../lib/hooks.ts";
 import { useSession } from "../lib/session.tsx";
 import { short, usd } from "../lib/format.ts";
 
-const NAV: { r: Route; label: string; cls?: string }[] = [
-  { r: "how", label: "How it works" },
-  { r: "proof", label: "Proof" },
-  { r: "legendary", label: "Legendary", cls: "legend" },
-  { r: "soon", label: "Coming soon" },
-  { r: "stats", label: "Stats" },
-];
-
-export function Logo() {
-  return (
-    <a className="logo" href={href("home")} aria-label="Streetstock home">
-      <PinMark />
-      <span>
-        street<b>stock</b>
-      </span>
-    </a>
-  );
-}
-
-export function WalletChip() {
+export function Header() {
   const { wallet, me, openSheet, signOut, ready } = useSession();
-  if (!ready) return null;
-  if (!wallet)
-    return (
-      <button type="button" className="btn btn-ghost btn-sm" onClick={openSheet}>
-        Sign in
-      </button>
-    );
   return (
-    <button type="button" className="chip-wallet" title="Sign out" onClick={() => confirm("Sign out?") && void signOut()}>
-      <span className="dot" />
-      <span>{me.handle ?? short(wallet)}</span>
-      {me.totalUsd ? <span className="num green">{usd(me.totalUsd)}</span> : null}
-    </button>
-  );
-}
-
-export function Header({ route }: { route: Route }) {
-  return (
-    <header className="header">
-      <Logo />
-      <nav className="nav" aria-label="Main">
-        {NAV.map((n) => (
-          <a key={n.r} href={href(n.r)} className={n.cls} aria-current={route === n.r ? "page" : undefined}>
-            {n.label}
-          </a>
-        ))}
-      </nav>
-      <div className="header-right">
-        <a className="btn btn-green btn-sm open-map" href={href("map")}>
-          Open the map
+    <header className="hdr">
+      <div className="hdr-inner">
+        <a className="brand" href={href("home")} aria-label="Streetstock home">
+          <Mark className="brand-mark" />
+          <Word className="brand-word" />
         </a>
-        <WalletChip />
+        <nav className="hdr-nav" aria-label="Main">
+          <a className="linkish hdr-link t-green" href={href("how")}>
+            <IcBook /> How it works
+          </a>
+          <a className="linkish hdr-link t-cyan" href={href("proof")}>
+            <IcShield /> Proof
+          </a>
+          <a className="linkish hdr-link t-gold" href={href("legendary")}>
+            <IcTrophy /> Legendary
+          </a>
+          <a className="linkish hdr-link t-lime" href={href("stats")}>
+            <IcBars /> Stats
+          </a>
+        </nav>
+        <div className="hdr-actions">
+          <a className="btn sm ghost map-btn" href={href("map")}>
+            Open the map
+          </a>
+          {!ready ? null : wallet ? (
+            <button type="button" className="btn sm me-btn" title="Sign out" onClick={() => confirm("Sign out?") && void signOut()}>
+              <span className="me-avatar">{(me.handle ?? wallet.slice(2, 3)).slice(0, 1).toUpperCase()}</span>
+              <span>{me.handle ?? short(wallet)}</span>
+              {me.totalUsd ? <span className="num">· {usd(me.totalUsd)}</span> : null}
+            </button>
+          ) : (
+            <button type="button" className="btn sm" onClick={openSheet}>
+              <span className="auth-long">Sign in to start</span>
+              <span className="auth-short">Sign in</span>
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );
 }
 
-export function TabBar({ route }: { route: Route }) {
-  const tab = (r: Route, label: string, icon: ReactNode, cls?: string) => (
-    <a href={href(r)} className={cls} aria-current={route === r ? "page" : undefined}>
-      {cls === "map-tab" ? <span className="bub">{icon}</span> : icon}
-      {label}
+export function Dock({ route }: { route: Route }) {
+  const tab = (r: Route, label: string, icon: React.ReactNode, tone: string) => (
+    <a href={href(r)} className={`tab ${tone} ${route === r ? "on" : ""}`} aria-current={route === r ? "page" : undefined}>
+      <span className="tab-icon">{icon}</span>
+      <span className="tab-label">{label}</span>
     </a>
   );
   return (
-    <nav className="tabbar" aria-label="Tabs">
-      {tab("home", "Home", <Home />)}
-      {tab("proof", "Proof", <Shield />)}
-      {tab("map", "Map", <MapIcon size={26} />, "map-tab")}
-      {tab("legendary", "Legendary", <Crown />)}
-      {tab("stats", "Stats", <Chart />)}
+    <nav className="dock" aria-label="Tabs">
+      {tab("home", "Home", <IcHome size={17} />, "t-green")}
+      {tab("proof", "Proof", <IcShield size={17} />, "t-cyan")}
+      {tab("map", "Map", <IcPin size={18} />, "map")}
+      {tab("legendary", "Legendary", <IcTrophy size={17} />, "t-gold")}
+      {tab("stats", "Stats", <IcBars size={17} />, "t-lime")}
     </nav>
   );
 }

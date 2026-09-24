@@ -1,32 +1,28 @@
 import { lazy, Suspense } from "react";
-import { Header, TabBar } from "./components/Chrome.tsx";
+import { Dock, Header } from "./components/Chrome.tsx";
 import { SignInSheet } from "./components/SignInSheet.tsx";
 import { useRoute } from "./lib/hooks.ts";
-import { Home } from "./pages/Home.tsx";
-import { ComingSoon, HowItWorks, LegendaryPanel, ProofPanel, StatsPanel } from "./pages/Panels.tsx";
+import { ComingSoon, HowItWorks, LegendaryPopup, ProofPopup, StatsPopup } from "./pages/Popups.tsx";
 
-// maplibre is the heaviest thing we ship; only load it when someone opens the map
-const MapView = lazy(() => import("./pages/MapView.tsx").then((m) => ({ default: m.MapView })));
+// the stage carries maplibre, the heaviest thing we ship; the header paints while it loads
+const Stage = lazy(() => import("./stage/Stage.tsx").then((m) => ({ default: m.Stage })));
 
 export function App() {
   const route = useRoute();
-
   return (
     <>
-      {route !== "map" && <Header route={route} />}
-      {route === "map" ? (
-        <Suspense fallback={<div className="mapwrap" aria-busy="true" />}>
-          <MapView />
+      <Header />
+      <main className="app-main">
+        <Suspense fallback={<section className="stage" />}>
+          <Stage open={route === "map"} />
         </Suspense>
-      ) : (
-        <Home />
-      )}
+      </main>
       {route === "how" && <HowItWorks />}
-      {route === "proof" && <ProofPanel />}
-      {route === "legendary" && <LegendaryPanel />}
+      {route === "proof" && <ProofPopup />}
+      {route === "legendary" && <LegendaryPopup />}
       {route === "soon" && <ComingSoon />}
-      {route === "stats" && <StatsPanel />}
-      {route !== "map" && <TabBar route={route} />}
+      {route === "stats" && <StatsPopup />}
+      <Dock route={route} />
       <SignInSheet />
     </>
   );

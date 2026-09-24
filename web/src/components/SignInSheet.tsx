@@ -1,5 +1,4 @@
-import type { ReactNode } from "react";
-import { Sheet } from "./Sheet.tsx";
+import { useEffect, type ReactNode } from "react";
 import { Google, Wallet, X } from "./Icons.tsx";
 import { useSession, type Method } from "../lib/session.tsx";
 
@@ -9,7 +8,7 @@ const OPTIONS: { id: Method; label: string; note: string; icon: ReactNode; socia
   {
     id: "wallet",
     label: "Continue with a wallet",
-    note: "MetaMask, Rabby, or any Ethereum wallet · on a phone, open this site inside the wallet app",
+    note: "MetaMask, Rabby or any Ethereum wallet · on a phone this opens the site inside the wallet app",
     icon: <Wallet />,
     social: false,
   },
@@ -17,37 +16,48 @@ const OPTIONS: { id: Method; label: string; note: string; icon: ReactNode; socia
 
 export function SignInSheet() {
   const { sheetOpen, closeSheet, signIn, busy, error, canSocial } = useSession();
+
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeSheet();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sheetOpen, closeSheet]);
+
   if (!sheetOpen) return null;
   const options = OPTIONS.filter((o) => canSocial || !o.social);
 
   return (
-    <Sheet
-      onClose={closeSheet}
-      narrow
-      eyebrow="sign in"
-      title="Sign in to start"
-      lede={
-        canSocial
-          ? "A wallet on Robinhood Chain is made for you when you sign in with Google or X. No app store, no seed phrase, nothing to pay, ever."
-          : "Sign in with any Ethereum wallet. Signing is free and moves nothing: we pay every network fee on Robinhood Chain."
-      }
-    >
-      {error && <p className="err">{error}</p>}
-      {options.map((o) => (
-        <button key={o.id} type="button" className="signin-opt" disabled={busy} onClick={() => void signIn(o.id)}>
-          <span className="ic">{o.icon}</span>
-          <span>
-            <span className="t">{o.label}</span>
-            <br />
-            <span className="n">{o.note}</span>
-          </span>
-          <span className="arr">{busy ? "…" : "→"}</span>
+    <>
+      <div className="si-scrim" onClick={closeSheet} aria-hidden="true" />
+      <div className="si-sheet" role="dialog" aria-modal="true" aria-label="Sign in">
+        <button type="button" className="pop-x" onClick={closeSheet} aria-label="Close">
+          ✕
         </button>
-      ))}
-      <p className="fine">
-        Tokenized stocks are not offered to US persons and may not be available where you live. By continuing you agree that the walking
-        is guaranteed and the price is not.
-      </p>
-    </Sheet>
+        <span className="eyebrow">sign in</span>
+        <h2 className="si-title">Sign in to start</h2>
+        <p className="si-lead">
+          {canSocial
+            ? "A wallet on Robinhood Chain is made for you when you sign in with Google or X. No app store, no seed phrase, nothing to pay, ever. On a phone pick one of those two: you stay in this browser and location just works."
+            : "Sign in with any Ethereum wallet. Signing is free and moves nothing: we pay every network fee on Robinhood Chain."}
+        </p>
+        {error && <p className="problem" style={{ margin: "0 0 10px" }}>{error}</p>}
+        <div className="si-options">
+          {options.map((o) => (
+            <button key={o.id} type="button" className="si-option" disabled={busy} onClick={() => void signIn(o.id)}>
+              <span className="si-icon">{o.icon}</span>
+              <span className="si-text">
+                <b>{o.label}</b>
+                <small>{o.note}</small>
+              </span>
+              <span className="si-arrow">{busy ? "…" : "→"}</span>
+            </button>
+          ))}
+        </div>
+        <p className="si-fine">
+          Tokenized stocks are not offered to US persons. By continuing you agree that the walking is guaranteed and the price is not.
+        </p>
+      </div>
+    </>
   );
 }
