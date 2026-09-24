@@ -8,3 +8,5 @@ contracts/cache/
 contracts/broadcast/
 *.log
 contracts/lib/
+
+.vercel
