@@ -1,0 +1,16 @@
+{
+  "name": "streetstock",
+  "private": true,
+  "description": "Stocks are lying on the street. A walk-to-earn map game paying real Robinhood Chain stock tokens.",
+  "workspaces": ["server", "web"],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c green,cyan \"npm:dev -w server\" \"npm:dev -w web\"",
+    "build": "npm run build -w web && npm run typecheck -w server",
+    "test": "npm test -w server && cd contracts && forge test",
+    "contracts:deps": "forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts@v5.1.0 --no-git --root contracts",
+    "start": "npm start -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
